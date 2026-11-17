@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author pc
@@ -52,5 +54,8 @@ public class Produit {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "CATEGORIE_ID", nullable = false)
     private Categorie categorie;
+
+    @OneToMany(mappedBy = "produit", fetch = FetchType.LAZY)
+    private List<MouvementStock> mouvements = new ArrayList<>();
 
 }
