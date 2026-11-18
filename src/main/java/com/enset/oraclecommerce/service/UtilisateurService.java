@@ -16,9 +16,11 @@ public interface UtilisateurService {
 
     List<UtilisateurResponse> findAll();
 
-    List<UtilisateurResponse> findAllActive();
-
     UtilisateurResponse update(Long id, UtilisateurRequest request);
+
+    void activate(Long id);
+
+    void deactivate(Long id);
 
     void delete(Long id);
 }

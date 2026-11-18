@@ -44,20 +44,18 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     @Override
     public UtilisateurResponse create(UtilisateurRequest request) {
 
+        if (utilisateurRepository.existsByEmail(request.email())) {
+            throw new BusinessException("Cet email est déjà utilisé");
+        }
+
         if (utilisateurRepository.existsByNomUtilisateur(
                 request.nomUtilisateur())) {
             throw new BusinessException(
                     "Ce nom d'utilisateur est déjà utilisé");
         }
 
-        if (utilisateurRepository.existsByEmail(request.email())) {
-            throw new BusinessException(
-                    "Cette adresse email est déjà utilisée");
-        }
-
-        Set<Role> roles = loadRoles(request.rolesIds());
-
         Utilisateur utilisateur = new Utilisateur();
+
         utilisateur.setNomUtilisateur(request.nomUtilisateur());
         utilisateur.setEmail(request.email());
         utilisateur.setMotDePasse(
@@ -65,10 +63,12 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         utilisateur.setNom(request.nom());
         utilisateur.setPrenom(request.prenom());
         utilisateur.setActif(true);
-        utilisateur.setRoles(roles);
 
-        return utilisateurMapper.toResponse(
-                utilisateurRepository.save(utilisateur));
+        utilisateur.setRoles(loadRoles(request.rolesIds()));
+
+        Utilisateur saved = utilisateurRepository.save(utilisateur);
+
+        return utilisateurMapper.toResponse(saved);
     }
 
     @Override
@@ -94,16 +94,6 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<UtilisateurResponse> findAllActive() {
-
-        return utilisateurRepository.findByActifTrue()
-                .stream()
-                .map(utilisateurMapper::toResponse)
-                .toList();
-    }
-
-    @Override
     public UtilisateurResponse update(
             Long id, UtilisateurRequest request) {
 
@@ -112,34 +102,27 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                         new ResourceNotFoundException(
                                 "Utilisateur introuvable"));
 
-        utilisateurRepository.findByNomUtilisateur(
-                request.nomUtilisateur()
-        ).ifPresent(existing -> {
-            if (!existing.getId().equals(id)) {
-                throw new BusinessException(
-                        "Ce nom d'utilisateur est déjà utilisé");
-            }
-        });
+        if (!utilisateur.getEmail().equals(request.email())
+                && utilisateurRepository.existsByEmail(request.email())) {
+            throw new BusinessException("Cet email est déjà utilisé");
+        }
 
-        utilisateurRepository.findByEmail(request.email())
-                .ifPresent(existing -> {
-                    if (!existing.getId().equals(id)) {
-                        throw new BusinessException(
-                                "Cette adresse email est déjà utilisée");
-                    }
-                });
+        if (!utilisateur.getNomUtilisateur().equals(
+                request.nomUtilisateur())
+                && utilisateurRepository.existsByNomUtilisateur(
+                request.nomUtilisateur())) {
+            throw new BusinessException(
+                    "Ce nom d'utilisateur est déjà utilisé");
+        }
 
         utilisateur.setNomUtilisateur(request.nomUtilisateur());
         utilisateur.setEmail(request.email());
         utilisateur.setNom(request.nom());
         utilisateur.setPrenom(request.prenom());
 
-        // Ne modifier le mot de passe que s'il est renseigné.
-        if (request.motDePasse() != null
-                && !request.motDePasse().isBlank()) {
-            utilisateur.setMotDePasse(
-                    passwordEncoder.encode(request.motDePasse()));
-        }
+        // Le mot de passe est également renouvelé lors de cette mise à jour.
+        utilisateur.setMotDePasse(
+                passwordEncoder.encode(request.motDePasse()));
 
         utilisateur.setRoles(loadRoles(request.rolesIds()));
 
@@ -148,28 +131,41 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void activate(Long id) {
+        Utilisateur utilisateur = findEntity(id);
+        utilisateur.setActif(true);
+    }
 
-        Utilisateur utilisateur = utilisateurRepository.findById(id)
+    @Override
+    public void deactivate(Long id) {
+        Utilisateur utilisateur = findEntity(id);
+        utilisateur.setActif(false);
+    }
+
+    @Override
+    public void delete(Long id) {
+        Utilisateur utilisateur = findEntity(id);
+        utilisateurRepository.delete(utilisateur);
+    }
+
+    private Utilisateur findEntity(Long id) {
+        return utilisateurRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Utilisateur introuvable"));
-
-        utilisateurRepository.delete(utilisateur);
     }
 
     private Set<Role> loadRoles(Set<Long> rolesIds) {
 
         if (rolesIds == null || rolesIds.isEmpty()) {
-            throw new BusinessException(
-                    "Un utilisateur doit posséder au moins un rôle");
+            return new HashSet<>();
         }
 
         List<Role> roles = roleRepository.findAllById(rolesIds);
 
         if (roles.size() != rolesIds.size()) {
             throw new BusinessException(
-                    "Un ou plusieurs rôles sélectionnés n'existent pas");
+                    "Un ou plusieurs rôles sont introuvables");
         }
 
         return new HashSet<>(roles);
