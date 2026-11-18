@@ -21,4 +21,8 @@ public interface CommandeRepository extends JpaRepository<Commande, Long> {
     List<Commande> findByStatut(StatutCommande statut);
 
     List<Commande> findByClientIdOrderByDateCommandeDesc(Long clientId);
+
+    List<Commande> findAllByOrderByDateCommandeDesc();
+
+    long countByStatut(StatutCommande statut);
 }
