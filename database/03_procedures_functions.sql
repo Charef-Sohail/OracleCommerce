@@ -1,36 +1,37 @@
 
 -- =========================================================
 -- FICHIER : 03_procedures_functions.sql
--- PROJET : OracleCommerce
+-- PROJET  : OracleCommerce
 -- =========================================================
+
 
 -- =========================================================
 -- 1. FONCTION : CALCULER LE MONTANT D'UNE LIGNE
 -- =========================================================
 
-CREATE OR REPLACE FUNCTION calculer_montant_ligne(
-    p_quantite IN NUMBER,
-    p_prix IN NUMBER
+CREATE OR REPLACE FUNCTION CALCULER_MONTANT_LIGNE (
+    P_QUANTITE IN NUMBER,
+    P_PRIX     IN NUMBER
 )
-    RETURN NUMBER
-    IS
+RETURN NUMBER
+IS
 BEGIN
 
-    IF p_quantite IS NULL OR p_quantite <= 0 THEN
+IF P_QUANTITE IS NULL OR P_QUANTITE <= 0 THEN
         RAISE_APPLICATION_ERROR(
-                -20010,
-                'La quantite doit etre strictement positive.'
+            -20010,
+            'La quantite doit etre strictement positive.'
         );
-    END IF;
+END IF;
 
-    IF p_prix IS NULL OR p_prix < 0 THEN
+IF P_PRIX IS NULL OR P_PRIX < 0 THEN
         RAISE_APPLICATION_ERROR(
-                -20011,
-                'Le prix doit etre positif ou nul.'
+            -20011,
+            'Le prix doit etre positif ou nul.'
         );
-    END IF;
+END IF;
 
-    RETURN ROUND(p_quantite * p_prix, 2);
+RETURN ROUND(P_QUANTITE * P_PRIX, 2);
 
 END;
 /
@@ -39,109 +40,129 @@ END;
 -- 2. PROCEDURE : CREER UNE COMMANDE
 -- =========================================================
 
-CREATE OR REPLACE PROCEDURE creer_commande(
-    p_id_client   IN NUMBER,
-    p_id_produit  IN NUMBER,
-    p_quantite    IN NUMBER,
-    p_id_commande OUT NUMBER
+CREATE OR REPLACE PROCEDURE CREER_COMMANDE (
+    P_ID_CLIENT   IN NUMBER,
+    P_ID_PRODUIT  IN NUMBER,
+    P_QUANTITE    IN NUMBER,
+    P_ID_COMMANDE OUT NUMBER
 )
-    IS
-
-    v_stock_actuel NUMBER;
-    v_prix_produit NUMBER;
-    v_montant      NUMBER;
-    v_client       NUMBER;
+IS
+    V_STOCK_ACTUEL NUMBER;
+V_PRIX_PRODUIT NUMBER;
+V_MONTANT      NUMBER;
+V_NUMERO       VARCHAR2(50);
 
 BEGIN
 
-    -- Vérification des paramètres
-    IF p_id_client IS NULL OR p_id_produit IS NULL THEN
+    -- 1. Vérification des paramètres
+IF P_ID_CLIENT IS NULL OR P_ID_PRODUIT IS NULL THEN
         RAISE_APPLICATION_ERROR(
-                -20001,
-                'Le client et le produit sont obligatoires.'
+            -20001,
+            'Le client et le produit sont obligatoires.'
         );
-    END IF;
+END IF;
 
-    IF p_quantite IS NULL OR p_quantite <= 0 THEN
+IF P_QUANTITE IS NULL OR P_QUANTITE <= 0 THEN
         RAISE_APPLICATION_ERROR(
-                -20002,
-                'La quantite doit etre strictement positive.'
+            -20002,
+            'La quantite doit etre strictement positive.'
         );
-    END IF;
+END IF;
 
-    -- Vérification de l'existence du client
-    SELECT id_client
-    INTO v_client
-    FROM client
-    WHERE id_client = p_id_client;
+-- 2. Vérification de l'existence du client
+DECLARE
+    V_CLIENT NUMBER;
+BEGIN
+SELECT ID
+INTO V_CLIENT
+FROM CLIENT
+WHERE ID = P_ID_CLIENT;
+EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(
+                -20004,
+                'Client introuvable.'
+            );
+END;
 
-    -- Lecture et verrouillage du produit
-    SELECT quantite_stock, prix
-    INTO v_stock_actuel, v_prix_produit
-    FROM produit
-    WHERE id_produit = p_id_produit
-        FOR UPDATE;
+-- 3. Lecture et verrouillage du produit
+BEGIN
+SELECT QUANTITE_STOCK, PRIX
+INTO V_STOCK_ACTUEL, V_PRIX_PRODUIT
+FROM PRODUIT
+WHERE ID = P_ID_PRODUIT
+    FOR UPDATE;
+EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(
+                -20005,
+                'Produit introuvable.'
+            );
+END;
 
-    -- Vérification du stock
-    IF v_stock_actuel < p_quantite THEN
+-- 4. Vérification du stock
+IF V_STOCK_ACTUEL < P_QUANTITE THEN
         RAISE_APPLICATION_ERROR(
-                -20003,
-                'Stock insuffisant pour ce produit.'
+            -20003,
+            'Stock insuffisant pour ce produit.'
         );
-    END IF;
+END IF;
 
-    -- Calcul du montant total
-    v_montant := calculer_montant_ligne(
-            p_quantite,
-            v_prix_produit
-                 );
+-- 5. Calcul du montant
+V_MONTANT := CALCULER_MONTANT_LIGNE(
+        P_QUANTITE,
+        V_PRIX_PRODUIT
+    );
 
-    -- Création de la commande
-    INSERT INTO commande (
-        id_client,
-        date_commande,
-        statut,
-        montant_total
-    )
-    VALUES (
-               p_id_client,
-               SYSDATE,
-               'CONFIRMEE',
-               v_montant
-           )
-    RETURNING id_commande INTO p_id_commande;
+    -- 6. Génération du numéro de commande
+V_NUMERO := 'CMD-' ||
+                TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') ||
+                '-' || SEQ_COMMANDE.NEXTVAL;
 
-    -- Insertion de la ligne de commande
-    INSERT INTO ligne_commande (
-        id_commande,
-        id_produit,
-        quantite,
-        prix_unitaire
-    )
-    VALUES (
-               p_id_commande,
-               p_id_produit,
-               p_quantite,
-               v_prix_produit
-           );
+    -- 7. Création de la commande
+INSERT INTO COMMANDE (
+    ID,
+    NUMERO,
+    DATE_COMMANDE,
+    STATUT,
+    MONTANT_TOTAL,
+    CLIENT_ID
+)
+VALUES (
+           SEQ_COMMANDE.CURRVAL,
+           V_NUMERO,
+           SYSDATE,
+           'EN_ATTENTE',
+           V_MONTANT,
+           P_ID_CLIENT
+       )
+RETURNING ID INTO P_ID_COMMANDE;
 
-    -- Mise à jour du stock
-    -- Le trigger enregistre automatiquement le mouvement
-    UPDATE produit
-    SET quantite_stock = quantite_stock - p_quantite
-    WHERE id_produit = p_id_produit;
+-- 8. Insertion de la ligne de commande
+INSERT INTO LIGNE_COMMANDE (
+    ID,
+    QUANTITE,
+    PRIX_UNITAIRE,
+    COMMANDE_ID,
+    PRODUIT_ID
+)
+VALUES (
+           SEQ_LIGNE_COMMANDE.NEXTVAL,
+           P_QUANTITE,
+           V_PRIX_PRODUIT,
+           P_ID_COMMANDE,
+           P_ID_PRODUIT
+       );
 
-    -- Pas de COMMIT ici :
-    -- Spring Boot contrôle la transaction.
+-- 9. Mise à jour du stock
+UPDATE PRODUIT
+SET QUANTITE_STOCK = QUANTITE_STOCK - P_QUANTITE
+WHERE ID = P_ID_PRODUIT;
+
+-- Pas de COMMIT ici :
+-- La transaction est contrôlée par l'appelant.
 
 EXCEPTION
-
-    WHEN NO_DATA_FOUND THEN
-        RAISE_APPLICATION_ERROR(
-                -20004,
-                'Client ou produit introuvable.'
-        );
-
     WHEN OTHERS THEN
         RAISE;
 
