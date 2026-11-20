@@ -1,62 +1,81 @@
 
 -- =========================================================
 -- FICHIER : 02_sequences_triggers.sql
--- PROJET : OracleCommerce
+-- PROJET  : OracleCommerce
 -- =========================================================
 
-CREATE OR REPLACE TRIGGER trg_mouvement_stock
-    AFTER INSERT OR UPDATE OF quantite_stock
-    ON produit
+-- =========================================================
+-- TRIGGER : Enregistrement automatique des mouvements
+-- =========================================================
+
+CREATE OR REPLACE TRIGGER TRG_MOUVEMENT_STOCK
+    AFTER INSERT OR UPDATE OF QUANTITE_STOCK
+    ON PRODUIT
     FOR EACH ROW
 
 DECLARE
-    v_type VARCHAR2(20);
-    v_diff NUMBER;
+    V_TYPE       VARCHAR2(20);
+V_DIFF       NUMBER;
+V_QUANTITE_AVANT NUMBER;
+V_QUANTITE_APRES NUMBER;
 
 BEGIN
 
-    -- Cas 1 : Nouveau produit
-    IF INSERTING THEN
+    -- Cas 1 : Insertion d'un nouveau produit
+IF INSERTING THEN
 
-        IF :NEW.quantite_stock > 0 THEN
-            v_type := 'ENTREE';
-            v_diff := :NEW.quantite_stock;
-        ELSE
+        IF :NEW.QUANTITE_STOCK > 0 THEN
+            V_TYPE := 'ENTREE';
+V_DIFF := :NEW.QUANTITE_STOCK;
+V_QUANTITE_AVANT := 0;
+V_QUANTITE_APRES := :NEW.QUANTITE_STOCK;
+ELSE
             RETURN;
-        END IF;
+END IF;
 
-        -- Cas 2 : Modification du stock
-    ELSIF UPDATING THEN
+-- Cas 2 : Modification du stock
+ELSIF UPDATING THEN
 
-        IF :NEW.quantite_stock > :OLD.quantite_stock THEN
+        IF :NEW.QUANTITE_STOCK > :OLD.QUANTITE_STOCK THEN
 
-            v_type := 'ENTREE';
-            v_diff := :NEW.quantite_stock - :OLD.quantite_stock;
+            V_TYPE := 'ENTREE';
+V_DIFF := :NEW.QUANTITE_STOCK - :OLD.QUANTITE_STOCK;
 
-        ELSIF :NEW.quantite_stock < :OLD.quantite_stock THEN
+ELSIF :NEW.QUANTITE_STOCK < :OLD.QUANTITE_STOCK THEN
 
-            v_type := 'SORTIE';
-            v_diff := :OLD.quantite_stock - :NEW.quantite_stock;
+            V_TYPE := 'SORTIE';
+V_DIFF := :OLD.QUANTITE_STOCK - :NEW.QUANTITE_STOCK;
 
-        ELSE
+ELSE
             RETURN;
-        END IF;
+END IF;
 
-    END IF;
+V_QUANTITE_AVANT := :OLD.QUANTITE_STOCK;
+V_QUANTITE_APRES := :NEW.QUANTITE_STOCK;
 
-    -- Enregistrement automatique du mouvement
-    INSERT INTO mouvement_stock (
-        id_produit,
-        type_mouvement,
-        quantite,
-        date_mouvement
-    )
-    VALUES (
-               :NEW.id_produit,
-               v_type,
-               v_diff,
-               SYSDATE
-           );
+END IF;
+
+-- Enregistrement du mouvement de stock
+INSERT INTO MOUVEMENT_STOCK (
+    ID,
+    TYPE_MOUVEMENT,
+    QUANTITE,
+    QUANTITE_AVANT,
+    QUANTITE_APRES,
+    MOTIF,
+    DATE_MOUVEMENT,
+    PRODUIT_ID
+)
+VALUES (
+           SEQ_MOUVEMENT_STOCK.NEXTVAL,
+           V_TYPE,
+           V_DIFF,
+           V_QUANTITE_AVANT,
+           V_QUANTITE_APRES,
+           'Mouvement automatique par trigger',
+           SYSDATE,
+           :NEW.ID
+       );
 
 END;
 /
