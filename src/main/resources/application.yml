@@ -4,9 +4,9 @@ spring:
     name: OracleCommerce
 
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521/GLSID
-    username: system
-    password: "Glsid2026-2027"
+    url: jdbc:oracle:thin:@//localhost:1521/ORCLPDB
+    username: commerce_user
+    password: "commerce2026"
     driver-class-name: oracle.jdbc.OracleDriver
 
   jpa:
