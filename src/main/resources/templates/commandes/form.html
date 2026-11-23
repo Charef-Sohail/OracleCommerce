@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Nouvelle commande', 'commandes', ~{::main}, ~{::script})}">
+<body>
+<main class="content">
+    <div class="page-head"><div><h1>Nouvelle commande</h1>
+        <p>Choisissez un client puis ajoutez des produits. Le total est calculé en direct.</p></div></div>
+
+    <form class="card form-card" th:action="@{/commandes}" method="post" id="order-form" novalidate style="max-width:960px">
+        <div class="card-pad">
+            <div class="field" style="max-width:420px"
+                 th:with="br=${#ctx.getVariable('org.springframework.validation.BindingResult.commande')}"
+                 th:classappend="${br != null and br.hasFieldErrors('clientId')} ? 'has-error'">
+                <label for="clientId">Client <span class="req">*</span></label>
+                <select class="select" id="clientId" name="clientId">
+                    <option value="">Choisir un client…</option>
+                    <option th:each="c : ${clients}" th:value="${c.id}" th:text="${c.prenom + ' ' + c.nom + ' — ' + c.email}"
+                            th:selected="${commande?.clientId != null and commande.clientId == c.id}">Client</option>
+                </select>
+                <p class="field-error" th:if="${br != null and br.hasFieldErrors('clientId')}" th:text="${br.getFieldError('clientId').defaultMessage}"></p>
+            </div>
+        </div>
+
+        <div class="card-head"><h2>Produits</h2>
+            <button type="button" class="btn btn-sm spacer" id="add-line"><svg class="i"><use href="#i-plus"/></svg>Ajouter une ligne</button></div>
+
+        <th:block th:with="br=${#ctx.getVariable('org.springframework.validation.BindingResult.commande')}">
+            <p class="field-error" style="padding:10px 20px 0" th:if="${br != null and br.hasFieldErrors('lignes')}"
+               th:text="${br.getFieldError('lignes').defaultMessage}"></p>
+        </th:block>
+
+        <div class="table-wrap">
+            <table class="table lines-table">
+                <thead><tr><th style="width:46%">Produit</th><th>Quantité</th><th class="num">Prix unitaire</th><th class="num">Sous-total</th><th></th></tr></thead>
+                <tbody id="lines"></tbody>
+            </table>
+        </div>
+        <div class="total-box"><span class="muted">Total de la commande</span><b class="mono"><span id="grand-total">0,00</span> MAD</b></div>
+
+        <div class="card-pad">
+            <div class="form-actions" style="margin-top:0;padding-top:0;border:0">
+                <button type="submit" class="btn btn-primary"><svg class="i"><use href="#i-check"/></svg>Créer la commande</button>
+                <a th:href="@{/commandes}" class="btn">Annuler</a>
+            </div>
+        </div>
+    </form>
+
+    <!-- Row template: cloned by commande-form.js -->
+    <template id="line-tpl">
+        <tr class="line">
+            <td><select class="select" data-role="produit">
+                <option value="">Choisir un produit…</option>
+                <option th:each="p : ${produits}" th:value="${p.id}"
+                        th:attr="data-prix=${p.prix},data-stock=${p.quantiteStock}"
+                        th:text="${p.reference + ' — ' + p.nom + ' (stock ' + p.quantiteStock + ')'}">Produit</option>
+            </select></td>
+            <td style="width:120px"><input class="input" type="number" min="1" value="1" data-role="quantite"></td>
+            <td class="num mono" data-role="unit">—</td>
+            <td class="num mono" data-role="sub">—</td>
+            <td><button type="button" class="btn-icon danger" data-remove title="Retirer"><svg class="i"><use href="#i-trash"/></svg></button></td>
+        </tr>
+    </template>
+</main>
+
+<script th:inline="javascript">
+    window.INITIAL_LINES = /*[[${commande != null ? commande.lignes : null}]]*/ [];
+</script>
+<script th:src="@{/js/commande-form.js}"></script>
+</body>
+</html>

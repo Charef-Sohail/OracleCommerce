@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Catégorie', 'categories', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head">
+        <div>
+            <h1 th:text="${categorieId != null} ? 'Modifier la catégorie' : 'Nouvelle catégorie'">Catégorie</h1>
+            <p>Les produits actifs sont rattachés à une catégorie active.</p>
+        </div>
+    </div>
+
+    <form class="card card-pad form-card" method="post" novalidate
+          th:action="${categorieId != null} ? @{/categories/{id}/edit(id=${categorieId})} : @{/categories}">
+        <div class="form-grid">
+            <div class="full" th:replace="~{layout/fields :: input('categorie', 'Nom', 'nom', 'text', true)}"></div>
+            <div class="full" th:replace="~{layout/fields :: textarea('categorie', 'Description', 'description')}"></div>
+            <div class="field">
+                <label for="active">Statut</label>
+                <select class="select" id="active" name="active">
+                    <option value="true"  th:selected="${categorie?.active != false}">Active</option>
+                    <option value="false" th:selected="${categorie?.active == false}">Inactive</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><svg class="i"><use href="#i-check"/></svg>Enregistrer</button>
+            <a th:href="@{/categories}" class="btn">Annuler</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

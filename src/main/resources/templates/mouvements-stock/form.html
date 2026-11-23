@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Nouveau mouvement', 'mouvements', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head"><div><h1>Nouveau mouvement de stock</h1>
+        <p>Un mouvement est définitif : il met à jour le stock du produit et reste dans l'historique.</p></div></div>
+
+    <form class="card card-pad form-card" th:action="@{/mouvements-stock}" method="post" novalidate>
+        <div class="form-grid">
+            <div class="field full">
+                <label for="produitId">Produit <span class="req">*</span></label>
+                <select class="select" id="produitId" name="produitId">
+                    <option value="">Choisir…</option>
+                    <option th:each="p : ${produits}" th:value="${p.id}"
+                            th:text="${p.reference + ' — ' + p.nom + '  (stock : ' + p.quantiteStock + ')'}"
+                            th:selected="${mouvement?.produitId != null and mouvement.produitId == p.id}">Produit</option>
+                </select>
+                <th:block th:replace="~{layout/fields :: error('mouvement', 'produitId')}"></th:block>
+            </div>
+            <div class="field">
+                <label for="typeMouvement">Type <span class="req">*</span></label>
+                <select class="select" id="typeMouvement" name="typeMouvement">
+                    <option value="">Choisir…</option>
+                    <option value="ENTREE" th:selected="${mouvement?.typeMouvement != null and mouvement.typeMouvement.name() == 'ENTREE'}">Entrée (ajoute au stock)</option>
+                    <option value="SORTIE" th:selected="${mouvement?.typeMouvement != null and mouvement.typeMouvement.name() == 'SORTIE'}">Sortie (retire du stock)</option>
+                    <option value="AJUSTEMENT" th:selected="${mouvement?.typeMouvement != null and mouvement.typeMouvement.name() == 'AJUSTEMENT'}">Ajustement</option>
+                </select>
+                <th:block th:replace="~{layout/fields :: error('mouvement', 'typeMouvement')}"></th:block>
+            </div>
+            <div th:replace="~{layout/fields :: input('mouvement', 'Quantité', 'quantite', 'number', true)}"></div>
+            <div class="full" th:replace="~{layout/fields :: textarea('mouvement', 'Motif', 'motif')}"></div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><svg class="i"><use href="#i-check"/></svg>Enregistrer</button>
+            <a th:href="@{/mouvements-stock}" class="btn">Annuler</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

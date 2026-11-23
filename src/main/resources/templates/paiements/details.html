@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Paiement', 'paiements', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head">
+        <div><h1>Paiement <span class="mono" th:text="'#' + ${paiement.id}">#1</span></h1>
+            <p><span class="badge" th:classappend="'badge-' + ${#strings.toLowerCase(paiement.statut)}" th:text="${#strings.replace(paiement.statut, '_', ' ')}">STATUT</span></p></div>
+        <div class="actions"><a th:href="@{/paiements}" class="btn">Retour à la liste</a></div>
+    </div>
+    <section class="card card-pad form-card">
+        <dl class="kv">
+            <dt>Transaction</dt><dd class="mono" th:text="${paiement.referenceTransaction != null} ? ${paiement.referenceTransaction} : '—'">TX</dd>
+            <dt>Commande</dt><dd><a class="mono" th:href="@{/commandes/{id}(id=${paiement.commandeId})}" th:text="${paiement.numeroCommande}" style="text-decoration:underline">CMD</a></dd>
+            <dt>Montant</dt><dd class="mono" th:text="${#numbers.formatDecimal(paiement.montant, 1, 'WHITESPACE', 2, 'COMMA')} + ' MAD'">0</dd>
+            <dt>Mode</dt><dd th:text="${#strings.replace(paiement.modePaiement, '_', ' ')}">Mode</dd>
+            <dt>Date</dt><dd th:text="${paiement.datePaiement != null} ? ${#temporals.format(paiement.datePaiement, 'dd/MM/yyyy à HH:mm')} : '—'">date</dd>
+        </dl>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Clients', 'clients', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head">
+        <div><h1>Clients</h1><p>Les personnes qui passent commande.</p></div>
+        <div class="actions">
+            <a th:href="@{/clients/new}" class="btn btn-primary"><svg class="i"><use href="#i-plus"/></svg>Nouveau client</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-tools">
+            <label class="filter"><svg class="i"><use href="#i-search"/></svg>
+                <input type="search" placeholder="Nom, email, téléphone…" data-filter="#tbl"></label>
+            <span class="count" data-count-for="#tbl"></span>
+        </div>
+        <div class="table-wrap" th:if="${!#lists.isEmpty(clients)}">
+            <table class="table" id="tbl">
+                <thead><tr><th>ID</th><th>Client</th><th>Contact</th><th>Adresse</th><th>Inscrit le</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="c : ${clients}">
+                    <td class="id" th:text="${c.id}">1</td>
+                    <td><div class="primary" th:text="${c.prenom + ' ' + c.nom}">Prénom Nom</div></td>
+                    <td><div th:text="${c.email}">mail</div><div class="sub mono" th:text="${c.telephone}">tel</div></td>
+                    <td class="muted" th:text="${c.adresse}">Adresse</td>
+                    <td class="muted nowrap" th:text="${c.dateCreation != null} ? ${#temporals.format(c.dateCreation, 'dd/MM/yyyy')} : '—'">date</td>
+                    <td>
+                        <div class="row-actions">
+                            <a th:href="@{/clients/{id}/edit(id=${c.id})}" class="btn-icon" title="Modifier"><svg class="i"><use href="#i-edit"/></svg></a>
+                            <form class="inline" th:action="@{/clients/{id}/delete(id=${c.id})}" method="post"
+                                  data-confirm="Supprimer ce client ?">
+                                <button class="btn-icon danger" title="Supprimer"><svg class="i"><use href="#i-trash"/></svg></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty" th:if="${#lists.isEmpty(clients)}"><svg class="i"><use href="#i-users"/></svg><p>Aucun client enregistré.</p></div>
+    </div>
+</main>
+</body>
+</html>

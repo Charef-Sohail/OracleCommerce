@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Paiements', 'paiements', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head">
+        <div><h1>Paiements</h1><p>Un paiement par commande.</p></div>
+        <div class="actions"><a th:href="@{/paiements/new}" class="btn btn-primary"><svg class="i"><use href="#i-plus"/></svg>Nouveau paiement</a></div>
+    </div>
+    <div class="card">
+        <div class="table-tools">
+            <label class="filter"><svg class="i"><use href="#i-search"/></svg>
+                <input type="search" placeholder="Référence, commande, mode…" data-filter="#tbl"></label>
+            <span class="count" data-count-for="#tbl"></span>
+        </div>
+        <div class="table-wrap" th:if="${!#lists.isEmpty(paiements)}">
+            <table class="table" id="tbl">
+                <thead><tr><th>Transaction</th><th>Commande</th><th>Mode</th><th class="num">Montant</th><th>Statut</th><th>Date</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="p : ${paiements}">
+                    <td class="id" th:text="${p.referenceTransaction != null} ? ${p.referenceTransaction} : '#' + ${p.id}">TX</td>
+                    <td><a class="mono" th:href="@{/commandes/{id}(id=${p.commandeId})}" th:text="${p.numeroCommande}" style="text-decoration:underline">CMD</a></td>
+                    <td th:text="${#strings.replace(p.modePaiement, '_', ' ')}">Mode</td>
+                    <td class="num mono" th:text="${#numbers.formatDecimal(p.montant, 1, 'WHITESPACE', 2, 'COMMA')} + ' MAD'">0</td>
+                    <td><span class="badge" th:classappend="'badge-' + ${#strings.toLowerCase(p.statut)}" th:text="${#strings.replace(p.statut, '_', ' ')}">STATUT</span></td>
+                    <td class="muted nowrap" th:text="${p.datePaiement != null} ? ${#temporals.format(p.datePaiement, 'dd/MM/yyyy HH:mm')} : '—'">date</td>
+                    <td><div class="row-actions"><a th:href="@{/paiements/{id}(id=${p.id})}" class="btn-icon" title="Détails"><svg class="i"><use href="#i-eye"/></svg></a></div></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty" th:if="${#lists.isEmpty(paiements)}"><svg class="i"><use href="#i-card"/></svg><p>Aucun paiement enregistré.</p></div>
+    </div>
+</main>
+</body>
+</html>

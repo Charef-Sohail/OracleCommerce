@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="navbar(title)" class="topbar">
+    <button type="button" class="btn-icon menu-btn" data-toggle-sidebar aria-label="Menu">
+        <svg class="i"><use href="#i-menu"/></svg>
+    </button>
+    <div class="crumb">oracle-commerce / <b th:text="${title}">page</b></div>
+
+    <form class="top-search" th:action="@{/produits/recherche}" method="get" role="search">
+        <svg class="i"><use href="#i-search"/></svg>
+        <input type="search" name="keyword" placeholder="Rechercher un produit…" aria-label="Rechercher un produit">
+    </form>
+
+    <a th:href="@{/oracle}" class="db-pill" title="Voir l'architecture Oracle en direct">
+        <span class="dot"></span><span class="t">GLSID · Oracle 19c</span>
+    </a>
+</header>
+</body>
+</html>

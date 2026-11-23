@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Produits', 'produits', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head">
+        <div><h1>Produits</h1><p>Catalogue, prix et niveaux de stock.</p></div>
+        <div class="actions">
+            <a th:href="@{/produits/new}" class="btn btn-primary"><svg class="i"><use href="#i-plus"/></svg>Nouveau produit</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-tools">
+            <nav class="tabs">
+                <a th:href="@{/produits}" data-tab="/produits">Tous</a>
+                <a th:href="@{/produits/stock-alertes}" data-tab="/produits/stock-alertes">Stock en alerte</a>
+            </nav>
+            <form th:action="@{/produits/recherche}" method="get" class="filter">
+                <svg class="i"><use href="#i-search"/></svg>
+                <input type="search" name="keyword" th:value="${keyword}" placeholder="Rechercher (serveur)…">
+            </form>
+            <span class="count" th:text="${#lists.size(produits)} + ' produit(s)'"></span>
+        </div>
+
+        <div class="table-wrap" th:if="${!#lists.isEmpty(produits)}">
+            <table class="table">
+                <thead><tr><th>Référence</th><th>Produit</th><th>Catégorie</th><th class="num">Prix</th><th>Stock</th><th>Statut</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="p : ${produits}"
+                    th:with="pct=${p.seuilAlerte == 0 or p.quantiteStock >= p.seuilAlerte * 3 ? 100 : p.quantiteStock * 100 / (p.seuilAlerte * 3)},
+                             out=${p.quantiteStock == 0}, low=${p.quantiteStock <= p.seuilAlerte}">
+                    <td class="id" th:text="${p.reference}">REF</td>
+                    <td><div class="primary" th:text="${p.nom}">Nom</div>
+                        <div class="sub" th:text="${p.description}">Description</div></td>
+                    <td th:text="${p.categorieNom}">Catégorie</td>
+                    <td class="num mono" th:text="${#numbers.formatDecimal(p.prix, 1, 'WHITESPACE', 2, 'COMMA')} + ' MAD'">0</td>
+                    <td>
+                        <div class="stock" th:classappend="${out} ? 'out' : (${low} ? 'low' : '')">
+                            <span class="mono" th:text="${p.quantiteStock}">0</span>
+                            <span class="bar"><i th:style="'width:' + ${pct} + '%'"></i></span>
+                            <span class="badge badge-rupture" th:if="${out}">Rupture</span>
+                            <span class="badge badge-alerte" th:if="${!out and low}">Alerte</span>
+                        </div>
+                    </td>
+                    <td><span class="badge" th:classappend="${p.actif} ? 'badge-actif' : 'badge-inactif'" th:text="${p.actif} ? 'Actif' : 'Inactif'">Actif</span></td>
+                    <td><div class="row-actions">
+                        <a th:href="@{/mouvements-stock/produit/{id}(id=${p.id})}" class="btn-icon" title="Historique du stock"><svg class="i"><use href="#i-swap"/></svg></a>
+                        <a th:href="@{/produits/{id}/edit(id=${p.id})}" class="btn-icon" title="Modifier"><svg class="i"><use href="#i-edit"/></svg></a>
+                        <form class="inline" th:action="@{/produits/{id}/delete(id=${p.id})}" method="post" data-confirm="Supprimer ce produit ?">
+                            <button class="btn-icon danger" title="Supprimer"><svg class="i"><use href="#i-trash"/></svg></button>
+                        </form>
+                    </div></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty" th:if="${#lists.isEmpty(produits)}"><svg class="i"><use href="#i-box"/></svg><p>Aucun produit à afficher.</p></div>
+    </div>
+</main>
+</body>
+</html>

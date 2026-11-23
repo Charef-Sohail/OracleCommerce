@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Rôles', 'roles', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head">
+        <div><h1>Rôles</h1><p>Les niveaux d'accès attribuables aux utilisateurs.</p></div>
+        <div class="actions"><a th:href="@{/roles/new}" class="btn btn-primary"><svg class="i"><use href="#i-plus"/></svg>Nouveau rôle</a></div>
+    </div>
+    <div class="card">
+        <div class="table-wrap" th:if="${!#lists.isEmpty(roles)}">
+            <table class="table">
+                <thead><tr><th>ID</th><th>Rôle</th><th>Description</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="r : ${roles}">
+                    <td class="id" th:text="${r.id}">1</td>
+                    <td><span class="badge badge-info" th:text="${r.nom}">ADMIN</span></td>
+                    <td class="muted" th:text="${r.description}">Description</td>
+                    <td><div class="row-actions">
+                        <a th:href="@{/roles/{id}/edit(id=${r.id})}" class="btn-icon" title="Modifier"><svg class="i"><use href="#i-edit"/></svg></a>
+                        <form class="inline" th:action="@{/roles/{id}/delete(id=${r.id})}" method="post" data-confirm="Supprimer ce rôle ?">
+                            <button class="btn-icon danger" title="Supprimer"><svg class="i"><use href="#i-trash"/></svg></button>
+                        </form>
+                    </div></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty" th:if="${#lists.isEmpty(roles)}"><svg class="i"><use href="#i-shield"/></svg><p>Aucun rôle défini.</p></div>
+    </div>
+</main>
+</body>
+</html>

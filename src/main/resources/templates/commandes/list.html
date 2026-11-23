@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Commandes', 'commandes', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head">
+        <div><h1>Commandes</h1><p>Suivi des ventes, de l'attente à la livraison.</p></div>
+        <div class="actions"><a th:href="@{/commandes/new}" class="btn btn-primary"><svg class="i"><use href="#i-plus"/></svg>Nouvelle commande</a></div>
+    </div>
+    <div class="card">
+        <div class="table-tools">
+            <label class="filter"><svg class="i"><use href="#i-search"/></svg>
+                <input type="search" placeholder="Numéro, client, statut…" data-filter="#tbl"></label>
+            <span class="count" data-count-for="#tbl"></span>
+        </div>
+        <div class="table-wrap" th:if="${!#lists.isEmpty(commandes)}">
+            <table class="table" id="tbl">
+                <thead><tr><th>Numéro</th><th>Client</th><th>Date</th><th>Statut</th><th class="num">Total</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="c : ${commandes}">
+                    <td><a class="mono primary" th:href="@{/commandes/{id}(id=${c.id})}" th:text="${c.numero}" style="text-decoration:underline">CMD</a></td>
+                    <td th:text="${c.nomClient}">Client</td>
+                    <td class="muted nowrap" th:text="${c.dateCommande != null} ? ${#temporals.format(c.dateCommande, 'dd/MM/yyyy HH:mm')} : '—'">date</td>
+                    <td><span class="badge" th:classappend="'badge-' + ${#strings.toLowerCase(c.statut)}" th:text="${#strings.replace(c.statut, '_', ' ')}">STATUT</span></td>
+                    <td class="num mono" th:text="${#numbers.formatDecimal(c.montantTotal, 1, 'WHITESPACE', 2, 'COMMA')} + ' MAD'">0</td>
+                    <td><div class="row-actions"><a th:href="@{/commandes/{id}(id=${c.id})}" class="btn-icon" title="Détails"><svg class="i"><use href="#i-eye"/></svg></a></div></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty" th:if="${#lists.isEmpty(commandes)}"><svg class="i"><use href="#i-cart"/></svg><p>Aucune commande pour le moment.</p></div>
+    </div>
+</main>
+</body>
+</html>

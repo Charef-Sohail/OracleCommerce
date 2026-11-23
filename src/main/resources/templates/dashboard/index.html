@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Tableau de bord', 'dashboard', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head">
+        <div>
+            <h1>Tableau de bord</h1>
+            <p>Vue d'ensemble de la plateforme e-commerce.</p>
+        </div>
+        <div class="actions">
+            <a th:href="@{/commandes/new}" class="btn btn-primary"><svg class="i"><use href="#i-plus"/></svg>Nouvelle commande</a>
+        </div>
+    </div>
+
+    <section class="stats">
+        <article class="card stat">
+            <svg class="i ico"><use href="#i-users"/></svg>
+            <div class="label">Clients</div>
+            <div class="value" th:attr="data-count=${stats.totalClients}" th:text="${stats.totalClients}">0</div>
+        </article>
+        <article class="card stat">
+            <svg class="i ico"><use href="#i-box"/></svg>
+            <div class="label">Produits</div>
+            <div class="value" th:attr="data-count=${stats.totalProduits}" th:text="${stats.totalProduits}">0</div>
+        </article>
+        <article class="card stat">
+            <svg class="i ico"><use href="#i-layers"/></svg>
+            <div class="label">Catégories</div>
+            <div class="value" th:attr="data-count=${stats.totalCategories}" th:text="${stats.totalCategories}">0</div>
+        </article>
+        <a th:href="@{/produits/stock-alertes}" class="card stat" th:classappend="${stats.produitsEnAlerte > 0} ? 'alert'">
+            <svg class="i ico"><use href="#i-alert"/></svg>
+            <div class="label">Stock en alerte</div>
+            <div class="value" th:attr="data-count=${stats.produitsEnAlerte}" th:text="${stats.produitsEnAlerte}">0</div>
+        </a>
+        <article class="card stat">
+            <svg class="i ico"><use href="#i-card"/></svg>
+            <div class="label">Valeur du stock</div>
+            <div class="value"><span th:attr="data-count=${stats.valeurTotaleStock}, data-decimals=2"
+                th:text="${#numbers.formatDecimal(stats.valeurTotaleStock, 0, 'WHITESPACE', 2, 'COMMA')}">0</span>
+                <small>MAD</small></div>
+        </article>
+    </section>
+
+    <section class="hero-oracle">
+        <div>
+            <h2>Voyez Oracle travailler, en direct.</h2>
+            <p>SGA, PGA, processus d'arrière-plan, redo logs : chaque requête de cette application traverse
+               l'instance Oracle. Suivez son trajet, lu depuis les vues <span class="mono">V$</span> de votre base.</p>
+        </div>
+        <a th:href="@{/oracle}" class="btn btn-primary">Ouvrir la vue Oracle <svg class="i"><use href="#i-arrow"/></svg></a>
+    </section>
+
+    <section class="card">
+        <div class="card-head"><h2>Accès rapide</h2></div>
+        <div class="quick">
+            <a th:href="@{/produits/new}"><svg class="i"><use href="#i-box"/></svg>Ajouter un produit</a>
+            <a th:href="@{/clients/new}"><svg class="i"><use href="#i-users"/></svg>Ajouter un client</a>
+            <a th:href="@{/mouvements-stock/new}"><svg class="i"><use href="#i-swap"/></svg>Mouvement de stock</a>
+            <a th:href="@{/paiements/new}"><svg class="i"><use href="#i-card"/></svg>Enregistrer un paiement</a>
+            <a th:href="@{/utilisateurs/new}"><svg class="i"><use href="#i-user"/></svg>Nouvel utilisateur</a>
+            <a th:href="@{/categories/new}"><svg class="i"><use href="#i-layers"/></svg>Nouvelle catégorie</a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Catégories', 'categories', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head">
+        <div><h1>Catégories</h1><p>Organisez votre catalogue de produits.</p></div>
+        <div class="actions">
+            <a th:href="@{/categories/new}" class="btn btn-primary"><svg class="i"><use href="#i-plus"/></svg>Nouvelle catégorie</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-tools">
+            <label class="filter"><svg class="i"><use href="#i-search"/></svg>
+                <input type="search" placeholder="Filtrer…" data-filter="#tbl"></label>
+            <span class="count" data-count-for="#tbl"></span>
+        </div>
+        <div class="table-wrap" th:if="${!#lists.isEmpty(categories)}">
+            <table class="table" id="tbl">
+                <thead><tr><th>ID</th><th>Nom</th><th>Description</th><th>Statut</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="c : ${categories}">
+                    <td class="id" th:text="${c.id}">1</td>
+                    <td class="primary" th:text="${c.nom}">Nom</td>
+                    <td class="muted" th:text="${c.description}">Description</td>
+                    <td><span class="badge" th:classappend="${c.active} ? 'badge-actif' : 'badge-inactif'"
+                              th:text="${c.active} ? 'Active' : 'Inactive'">Active</span></td>
+                    <td>
+                        <div class="row-actions">
+                            <a th:href="@{/categories/{id}/edit(id=${c.id})}" class="btn-icon" title="Modifier"><svg class="i"><use href="#i-edit"/></svg></a>
+                            <form class="inline" th:action="@{/categories/{id}/delete(id=${c.id})}" method="post"
+                                  data-confirm="Supprimer cette catégorie ?">
+                                <button class="btn-icon danger" title="Supprimer"><svg class="i"><use href="#i-trash"/></svg></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty" th:if="${#lists.isEmpty(categories)}">
+            <svg class="i"><use href="#i-layers"/></svg><p>Aucune catégorie pour le moment.</p>
+        </div>
+    </div>
+</main>
+</body>
+</html>

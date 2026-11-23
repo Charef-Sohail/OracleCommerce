@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="sidebar(active)" class="sidebar" id="sidebar">
+    <a th:href="@{/}" class="brand">
+        <span class="brand-mark"><svg class="i"><use href="#i-db"/></svg></span>
+        <span><b>OracleCommerce</b><small>ENSET · GLSID</small></span>
+    </a>
+
+    <a th:href="@{/dashboard}" class="nav-link" th:classappend="${active == 'dashboard'} ? 'is-active'">
+        <svg class="i"><use href="#i-home"/></svg>Tableau de bord</a>
+
+    <div class="nav-group">Catalogue</div>
+    <a th:href="@{/produits}" class="nav-link" th:classappend="${active == 'produits'} ? 'is-active'">
+        <svg class="i"><use href="#i-box"/></svg>Produits</a>
+    <a th:href="@{/categories}" class="nav-link" th:classappend="${active == 'categories'} ? 'is-active'">
+        <svg class="i"><use href="#i-layers"/></svg>Catégories</a>
+    <a th:href="@{/mouvements-stock}" class="nav-link" th:classappend="${active == 'mouvements'} ? 'is-active'">
+        <svg class="i"><use href="#i-swap"/></svg>Mouvements de stock</a>
+
+    <div class="nav-group">Ventes</div>
+    <a th:href="@{/clients}" class="nav-link" th:classappend="${active == 'clients'} ? 'is-active'">
+        <svg class="i"><use href="#i-users"/></svg>Clients</a>
+    <a th:href="@{/commandes}" class="nav-link" th:classappend="${active == 'commandes'} ? 'is-active'">
+        <svg class="i"><use href="#i-cart"/></svg>Commandes</a>
+    <a th:href="@{/paiements}" class="nav-link" th:classappend="${active == 'paiements'} ? 'is-active'">
+        <svg class="i"><use href="#i-card"/></svg>Paiements</a>
+
+    <div class="nav-group">Administration</div>
+    <a th:href="@{/utilisateurs}" class="nav-link" th:classappend="${active == 'utilisateurs'} ? 'is-active'">
+        <svg class="i"><use href="#i-user"/></svg>Utilisateurs</a>
+    <a th:href="@{/roles}" class="nav-link" th:classappend="${active == 'roles'} ? 'is-active'">
+        <svg class="i"><use href="#i-shield"/></svg>Rôles</a>
+
+    <div class="nav-group">Oracle</div>
+    <a th:href="@{/sql}" class="nav-link" th:classappend="${active == 'sql'} ? 'is-active'">
+        <svg class="i"><use href="#i-db"/></svg>Éditeur SQL</a>
+    <a th:href="@{/oracle}" class="nav-link" th:classappend="${active == 'oracle'} ? 'is-active'">
+        <svg class="i"><use href="#i-eye"/></svg>Oracle en direct<span class="tag">LIVE</span></a>
+
+    <div class="side-foot">Spring Boot · Thymeleaf<br>Oracle Database 19c</div>
+</aside>
+</body>
+</html>

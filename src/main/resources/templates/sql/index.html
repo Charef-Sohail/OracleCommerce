@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Éditeur SQL', 'sql', ~{::main}, ~{::script})}">
+<body>
+<main class="content wide sql-page">
+    <link rel="stylesheet" th:href="@{/css/sql-editor.css}"> <!-- body-ok stylesheet: page <head> is not merged by the layout -->
+
+    <div class="page-head">
+        <div>
+            <h1>Éditeur SQL</h1>
+            <p>Une session Oracle dédiée, <b>sans autocommit</b> : vos <span class="mono">INSERT / UPDATE / DELETE</span>
+               restent en attente jusqu'au <span class="mono">COMMIT</span>.</p>
+        </div>
+        <div class="actions">
+            <button type="button" class="btn btn-primary" id="run-btn"><svg class="i"><use href="#i-arrow"/></svg>Exécuter <kbd>Ctrl+↵</kbd></button>
+            <button type="button" class="btn" id="commit-btn"><svg class="i"><use href="#i-check"/></svg>COMMIT</button>
+            <button type="button" class="btn btn-danger" id="rollback-btn"><svg class="i"><use href="#i-trash"/></svg>ROLLBACK</button>
+        </div>
+    </div>
+
+    <div class="sql-grid">
+        <!-- ============ Editor + results ============ -->
+        <section>
+            <div class="card">
+                <div class="card-head">
+                    <h2>Requête</h2>
+                    <div class="mode-switch spacer" role="radiogroup" aria-label="Session d'exécution">
+                        <label><input type="radio" name="mode" value="editor" checked><span>Ma session <small>(transaction ouverte)</small></span></label>
+                        <label><input type="radio" name="mode" value="other"><span>Autre session <small>(SELECT seulement)</small></span></label>
+                    </div>
+                </div>
+                <textarea id="sql" class="sql-input" spellcheck="false" rows="9"
+                          placeholder="INSERT INTO categorie (id, nom, description, active) VALUES (seq_categorie.NEXTVAL, 'Demo', 'test', 1);&#10;SELECT * FROM categorie;"></textarea>
+                <div class="sql-foot">
+                    <span class="muted">Plusieurs instructions séparées par <span class="mono">;</span> · DDL bloqué (COMMIT implicite en Oracle)</span>
+                    <span class="spacer chips">
+                        <button type="button" class="chip" data-sample="insert">INSERT démo</button>
+                        <button type="button" class="chip" data-sample="select">SELECT catégories</button>
+                        <button type="button" class="chip" data-sample="delete">DELETE démo</button>
+                        <button type="button" class="chip" data-sample="commit">COMMIT</button>
+                    </span>
+                </div>
+            </div>
+
+            <div class="notice warn sql-hint" id="mode-hint" hidden>
+                <svg class="i"><use href="#i-eye"/></svg>
+                <span>Vous interrogez Oracle avec une <b>nouvelle connexion</b> : vous voyez uniquement ce qui est <b>validé</b>,
+                comme n'importe quel autre utilisateur.</span>
+            </div>
+
+            <div id="results"></div>
+        </section>
+
+        <!-- ============ Transaction panel ============ -->
+        <aside class="card tx-card">
+            <div class="card-head">
+                <h2>Transaction</h2>
+                <span class="tx-state spacer" id="tx-state" data-open="false">Aucune</span>
+            </div>
+
+            <div class="tx-body">
+                <ol class="flow" id="flow">
+                    <li data-step="cache">
+                        <b>Buffer cache</b>
+                        <small id="flow-cache">Aucun bloc modifié par cette transaction</small>
+                    </li>
+                    <li data-step="redobuf">
+                        <b>Redo log buffer</b>
+                        <small id="flow-redo">Rien en attente</small>
+                    </li>
+                    <li data-step="redofile">
+                        <b>Redo log file <span class="mono">(disque)</span></b>
+                        <small id="flow-file">Écrit par le LGWR au COMMIT</small>
+                    </li>
+                </ol>
+
+                <dl class="kv">
+                    <div><dt>Redo généré</dt><dd id="k-redo">0 o</dd></div>
+                    <div><dt>Blocs modifiés</dt><dd id="k-blocks">0</dd></div>
+                    <div><dt>Undo (blocs / records)</dt><dd id="k-undo">0 / 0</dd></div>
+                    <div><dt>XID</dt><dd class="mono" id="k-xid">—</dd></div>
+                    <div><dt>Début</dt><dd class="mono" id="k-start">—</dd></div>
+                    <div><dt>redo synch writes</dt><dd id="k-synch">0</dd></div>
+                    <div><dt>Commits (session)</dt><dd id="k-commits">0</dd></div>
+                </dl>
+                <p class="muted tx-note" id="tx-error" hidden></p>
+            </div>
+        </aside>
+    </div>
+
+    <!-- ============ The instance, live: same page as /oracle, reduced to the diagram ============ -->
+    <section class="card live-card">
+        <div class="card-head">
+            <h2>Ce qui se passe dans l'instance</h2>
+            <a class="muted mono spacer" th:href="@{/oracle}" target="_blank" rel="noopener">ouvrir en grand ↗</a>
+        </div>
+        <iframe class="live-frame" th:src="@{/oracle(embed=1)}" title="Instance Oracle en direct" loading="lazy"></iframe>
+        <p class="muted live-note">Chaque ordre exécuté ci-dessus apparaît ici sous forme de point lumineux. Les chiffres (redo, blocs modifiés, undo, redo synch writes) sont ceux mesurés par Oracle sur votre session.</p>
+    </section>
+</main>
+
+<script th:src="@{/js/sql-editor.js}"></script>
+</body>
+</html>

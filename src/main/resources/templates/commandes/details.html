@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Commande', 'commandes', ~{::main}, ~{})}">
+<body>
+<main class="content"
+      th:with="steps=${ {'EN_ATTENTE','VALIDEE','EXPEDIEE','LIVREE'} },
+               cancelled=${commande.statut.name() == 'ANNULEE'},
+               idx=${ {'EN_ATTENTE','VALIDEE','EXPEDIEE','LIVREE'}.indexOf(commande.statut.name()) }">
+    <div class="page-head">
+        <div>
+            <h1>Commande <span class="mono" th:text="${commande.numero}">CMD-0001</span></h1>
+            <p th:text="${commande.dateCommande != null} ? ${#temporals.format(commande.dateCommande, 'dd/MM/yyyy à HH:mm')} + ' · ' + ${commande.nomClient} : ${commande.nomClient}">date</p>
+        </div>
+        <div class="actions">
+            <a th:href="@{/paiements/new}" class="btn"><svg class="i"><use href="#i-card"/></svg>Enregistrer un paiement</a>
+            <a th:href="@{/commandes}" class="btn">Retour</a>
+        </div>
+    </div>
+
+    <section class="card card-pad" style="margin-bottom:16px">
+        <div class="notice warn" th:if="${cancelled}"><svg class="i"><use href="#i-alert"/></svg><span>Cette commande est annulée.</span></div>
+        <div class="timeline" th:unless="${cancelled}">
+            <div class="step" th:each="s, st : ${steps}"
+                 th:classappend="${st.index == idx} ? 'done current' : (${st.index < idx} ? 'done' : '')"
+                 th:text="${#strings.replace(s, '_', ' ')}">STEP</div>
+        </div>
+    </section>
+
+    <div class="grid-2" style="grid-template-columns: 2fr 1fr; align-items:start">
+        <section class="card">
+            <div class="card-head"><h2>Articles</h2></div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Produit</th><th class="num">Prix unitaire</th><th class="num">Qté</th><th class="num">Sous-total</th></tr></thead>
+                    <tbody>
+                    <tr th:each="l : ${commande.lignes}">
+                        <td><div class="primary" th:text="${l.nomProduit}">Produit</div><div class="sub mono" th:text="${l.referenceProduit}">REF</div></td>
+                        <td class="num mono" th:text="${#numbers.formatDecimal(l.prixUnitaire, 1, 'WHITESPACE', 2, 'COMMA')}">0</td>
+                        <td class="num mono" th:text="${l.quantite}">0</td>
+                        <td class="num mono" th:text="${#numbers.formatDecimal(l.sousTotal, 1, 'WHITESPACE', 2, 'COMMA')}">0</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="total-box"><span class="muted">Total</span>
+                <b class="mono" th:text="${#numbers.formatDecimal(commande.montantTotal, 1, 'WHITESPACE', 2, 'COMMA')} + ' MAD'">0</b></div>
+        </section>
+
+        <aside style="display:grid; gap:16px">
+            <section class="card card-pad">
+                <h2 style="font-size:15px;margin-bottom:12px">Statut</h2>
+                <p><span class="badge" th:classappend="'badge-' + ${#strings.toLowerCase(commande.statut)}" th:text="${#strings.replace(commande.statut, '_', ' ')}">STATUT</span></p>
+                <form th:unless="${cancelled}" th:action="@{/commandes/{id}/statut(id=${commande.id})}" method="post" style="margin-top:14px">
+                    <div class="field">
+                        <label for="statut">Changer le statut</label>
+                        <select class="select" id="statut" name="statut">
+                            <option th:each="s : ${statuts}" th:value="${s}" th:text="${#strings.replace(s, '_', ' ')}"
+                                    th:selected="${s == commande.statut}">S</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary btn-sm" style="margin-top:12px">Mettre à jour</button>
+                </form>
+            </section>
+            <section class="card card-pad" th:unless="${cancelled}">
+                <h2 style="font-size:15px;margin-bottom:6px">Annuler</h2>
+                <p class="muted" style="margin:0 0 12px">L'annulation est définitive.</p>
+                <form th:action="@{/commandes/{id}/annuler(id=${commande.id})}" method="post" data-confirm="Annuler cette commande ?">
+                    <button class="btn btn-danger btn-sm">Annuler la commande</button>
+                </form>
+            </section>
+        </aside>
+    </div>
+</main>
+</body>
+</html>

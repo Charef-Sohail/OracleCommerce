@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Mouvements de stock', 'mouvements', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head">
+        <div>
+            <h1 th:text="${produit != null} ? 'Historique · ' + ${produit.nom} : 'Mouvements de stock'">Mouvements de stock</h1>
+            <p th:if="${produit == null}">Entrées, sorties et ajustements, avec quantité avant et après.</p>
+            <p th:if="${produit != null}"><span class="mono" th:text="${produit.reference}">REF</span> ·
+               stock actuel : <b th:text="${produit.quantiteStock}">0</b> ·
+               <a th:href="@{/mouvements-stock}" style="text-decoration:underline">voir tous les mouvements</a></p>
+        </div>
+        <div class="actions"><a th:href="@{/mouvements-stock/new}" class="btn btn-primary"><svg class="i"><use href="#i-plus"/></svg>Nouveau mouvement</a></div>
+    </div>
+    <div class="card">
+        <div class="table-tools">
+            <label class="filter"><svg class="i"><use href="#i-search"/></svg>
+                <input type="search" placeholder="Produit, motif, type…" data-filter="#tbl"></label>
+            <span class="count" data-count-for="#tbl"></span>
+        </div>
+        <div class="table-wrap" th:if="${!#lists.isEmpty(mouvements)}">
+            <table class="table" id="tbl">
+                <thead><tr><th>Date</th><th>Produit</th><th>Type</th><th class="num">Qté</th><th class="num">Avant → Après</th><th>Motif</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="m : ${mouvements}">
+                    <td class="muted nowrap" th:text="${m.dateMouvement != null} ? ${#temporals.format(m.dateMouvement, 'dd/MM/yyyy HH:mm')} : '—'">date</td>
+                    <td><a th:href="@{/mouvements-stock/produit/{id}(id=${m.produitId})}">
+                        <div class="primary" th:text="${m.nomProduit}">Produit</div>
+                        <div class="sub mono" th:text="${m.referenceProduit}">REF</div></a></td>
+                    <td><span class="badge" th:classappend="'badge-' + ${#strings.toLowerCase(m.typeMouvement)}" th:text="${m.typeMouvement}">ENTREE</span></td>
+                    <td class="num mono" th:text="${m.quantite}">0</td>
+                    <td class="num mono"><span class="muted" th:text="${m.quantiteAvant}">0</span> → <b th:text="${m.quantiteApres}">0</b></td>
+                    <td class="muted" th:text="${m.motif}">motif</td>
+                    <td><div class="row-actions"><a th:href="@{/mouvements-stock/{id}(id=${m.id})}" class="btn-icon" title="Détails"><svg class="i"><use href="#i-eye"/></svg></a></div></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty" th:if="${#lists.isEmpty(mouvements)}"><svg class="i"><use href="#i-swap"/></svg><p>Aucun mouvement enregistré.</p></div>
+    </div>
+</main>
+</body>
+</html>

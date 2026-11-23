@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Utilisateurs', 'utilisateurs', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head">
+        <div><h1>Utilisateurs</h1><p>Comptes d'accès à l'application.</p></div>
+        <div class="actions"><a th:href="@{/utilisateurs/new}" class="btn btn-primary"><svg class="i"><use href="#i-plus"/></svg>Nouvel utilisateur</a></div>
+    </div>
+    <div class="card">
+        <div class="table-tools">
+            <label class="filter"><svg class="i"><use href="#i-search"/></svg>
+                <input type="search" placeholder="Nom, email, rôle…" data-filter="#tbl"></label>
+            <span class="count" data-count-for="#tbl"></span>
+        </div>
+        <div class="table-wrap" th:if="${!#lists.isEmpty(utilisateurs)}">
+            <table class="table" id="tbl">
+                <thead><tr><th>Utilisateur</th><th>Email</th><th>Rôles</th><th>Statut</th><th>Créé le</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="u : ${utilisateurs}">
+                    <td><div class="primary mono" th:text="${u.nomUtilisateur}">login</div>
+                        <div class="sub" th:text="${u.prenom + ' ' + u.nom}">Prénom Nom</div></td>
+                    <td th:text="${u.email}">mail</td>
+                    <td><span class="badge badge-info" th:each="r : ${u.roles}" th:text="${r}" style="margin-right:4px">ROLE</span></td>
+                    <td><span class="badge" th:classappend="${u.actif} ? 'badge-actif' : 'badge-inactif'" th:text="${u.actif} ? 'Actif' : 'Désactivé'">Actif</span></td>
+                    <td class="muted nowrap" th:text="${u.dateCreation != null} ? ${#temporals.format(u.dateCreation, 'dd/MM/yyyy')} : '—'">date</td>
+                    <td><div class="row-actions">
+                        <form class="inline" th:if="${u.actif}" th:action="@{/utilisateurs/{id}/desactiver(id=${u.id})}" method="post" data-confirm="Désactiver ce compte ?">
+                            <button class="btn btn-sm">Désactiver</button></form>
+                        <form class="inline" th:unless="${u.actif}" th:action="@{/utilisateurs/{id}/activer(id=${u.id})}" method="post">
+                            <button class="btn btn-sm">Activer</button></form>
+                        <a th:href="@{/utilisateurs/{id}/edit(id=${u.id})}" class="btn-icon" title="Modifier"><svg class="i"><use href="#i-edit"/></svg></a>
+                        <form class="inline" th:action="@{/utilisateurs/{id}/delete(id=${u.id})}" method="post" data-confirm="Supprimer ce compte ?">
+                            <button class="btn-icon danger" title="Supprimer"><svg class="i"><use href="#i-trash"/></svg></button></form>
+                    </div></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty" th:if="${#lists.isEmpty(utilisateurs)}"><svg class="i"><use href="#i-user"/></svg><p>Aucun utilisateur.</p></div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Client', 'clients', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head">
+        <div><h1 th:text="${clientId != null} ? 'Modifier le client' : 'Nouveau client'">Client</h1></div>
+    </div>
+
+    <form class="card card-pad form-card" method="post" novalidate
+          th:action="${clientId != null} ? @{/clients/{id}/edit(id=${clientId})} : @{/clients}">
+        <div class="form-grid">
+            <div th:replace="~{layout/fields :: input('client', 'Nom', 'nom', 'text', true)}"></div>
+            <div th:replace="~{layout/fields :: input('client', 'Prénom', 'prenom', 'text', true)}"></div>
+            <div class="full" th:replace="~{layout/fields :: input('client', 'Email', 'email', 'email', true)}"></div>
+            <div th:replace="~{layout/fields :: input('client', 'Téléphone', 'telephone', 'tel', false)}"></div>
+            <div th:replace="~{layout/fields :: input('client', 'Adresse', 'adresse', 'text', false)}"></div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><svg class="i"><use href="#i-check"/></svg>Enregistrer</button>
+            <a th:href="@{/clients}" class="btn">Annuler</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

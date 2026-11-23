@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Nouveau paiement', 'paiements', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head"><div><h1>Nouveau paiement</h1>
+        <p>Le montant est repris automatiquement de la commande.</p></div></div>
+
+    <form class="card card-pad form-card" th:action="@{/paiements}" method="post" novalidate>
+        <div class="form-grid">
+            <div class="field full">
+                <label for="commandeId">Commande <span class="req">*</span></label>
+                <select class="select" id="commandeId" name="commandeId">
+                    <option value="">Choisir…</option>
+                    <option th:each="c : ${commandes}" th:value="${c.id}"
+                            th:text="${c.numero + ' — ' + c.nomClient + ' — ' + #numbers.formatDecimal(c.montantTotal, 1, 'WHITESPACE', 2, 'COMMA') + ' MAD  [' + #strings.replace(c.statut, '_', ' ') + ']'}"
+                            th:selected="${paiement?.commandeId != null and paiement.commandeId == c.id}">CMD</option>
+                </select>
+                <th:block th:replace="~{layout/fields :: error('paiement', 'commandeId')}"></th:block>
+            </div>
+            <div class="field full">
+                <label for="modePaiement">Mode de paiement <span class="req">*</span></label>
+                <select class="select" id="modePaiement" name="modePaiement">
+                    <option value="">Choisir…</option>
+                    <option th:each="m : ${ {'ESPECES','CARTE_BANCAIRE','VIREMENT','CHEQUE'} }" th:value="${m}"
+                            th:text="${#strings.capitalize(#strings.toLowerCase(#strings.replace(m, '_', ' ')))}"
+                            th:selected="${paiement?.modePaiement != null and paiement.modePaiement.name() == m}">Mode</option>
+                </select>
+                <th:block th:replace="~{layout/fields :: error('paiement', 'modePaiement')}"></th:block>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><svg class="i"><use href="#i-check"/></svg>Enregistrer</button>
+            <a th:href="@{/paiements}" class="btn">Annuler</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

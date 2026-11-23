@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Utilisateur', 'utilisateurs', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head"><div><h1 th:text="${utilisateurId != null} ? 'Modifier l''utilisateur' : 'Nouvel utilisateur'">Utilisateur</h1></div></div>
+
+    <!-- UtilisateurController: create = POST /utilisateurs, update = POST /utilisateurs/{id} -->
+    <form class="card card-pad form-card" method="post" novalidate
+          th:action="${utilisateurId != null} ? @{/utilisateurs/{id}(id=${utilisateurId})} : @{/utilisateurs}">
+        <div class="notice warn" th:if="${utilisateurId != null}">
+            <svg class="i"><use href="#i-alert"/></svg>
+            <span>Saisissez un mot de passe (8 caractères minimum) et re-sélectionnez les rôles pour enregistrer.</span>
+        </div>
+        <div class="form-grid">
+            <div th:replace="~{layout/fields :: input('utilisateur', 'Nom d''utilisateur', 'nomUtilisateur', 'text', true)}"></div>
+            <div th:replace="~{layout/fields :: input('utilisateur', 'Email', 'email', 'email', true)}"></div>
+            <div th:replace="~{layout/fields :: input('utilisateur', 'Prénom', 'prenom', 'text', false)}"></div>
+            <div th:replace="~{layout/fields :: input('utilisateur', 'Nom', 'nom', 'text', false)}"></div>
+
+            <!-- password: never pre-filled -->
+            <div class="field full" th:with="br=${#ctx.getVariable('org.springframework.validation.BindingResult.utilisateur')}"
+                 th:classappend="${br != null and br.hasFieldErrors('motDePasse')} ? 'has-error'">
+                <label for="motDePasse">Mot de passe <span class="req">*</span></label>
+                <input class="input" type="password" id="motDePasse" name="motDePasse" autocomplete="new-password">
+                <p class="field-error" th:if="${br != null and br.hasFieldErrors('motDePasse')}" th:text="${br.getFieldError('motDePasse').defaultMessage}"></p>
+            </div>
+
+            <div class="field full">
+                <label>Rôles</label>
+                <div class="checks">
+                    <label class="check" th:each="r : ${roles}">
+                        <input type="checkbox" name="rolesIds" th:value="${r.id}"
+                               th:checked="${utilisateur?.rolesIds != null and #sets.contains(utilisateur.rolesIds, r.id)}">
+                        <span th:text="${r.nom}">ROLE</span>
+                    </label>
+                    <span class="muted" th:if="${#lists.isEmpty(roles)}">Aucun rôle : créez-en d'abord dans « Rôles ».</span>
+                </div>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><svg class="i"><use href="#i-check"/></svg>Enregistrer</button>
+            <a th:href="@{/utilisateurs}" class="btn">Annuler</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

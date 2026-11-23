@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--
+  Form helpers that read values from the model object and errors from the BindingResult
+  directly, so they work with Java records (no getX() needed, no th:field).
+  obj = model attribute name ("client", "produit", ...)
+-->
+<body>
+
+<div th:fragment="input(obj, label, name, type, required)" class="field"
+     th:with="br=${#ctx.getVariable('org.springframework.validation.BindingResult.' + obj)}, val=${#ctx.getVariable(obj)}"
+     th:classappend="${br != null and br.hasFieldErrors(name)} ? 'has-error'">
+    <label th:for="${name}">[[${label}]] <span class="req" th:if="${required}">*</span></label>
+    <input class="input" step="any" th:id="${name}" th:name="${name}" th:type="${type}"
+           th:value="${val != null ? val.__${name}__ : null}">
+    <p class="field-error" th:if="${br != null and br.hasFieldErrors(name)}"
+       th:text="${br.getFieldError(name).defaultMessage}"></p>
+</div>
+
+<div th:fragment="textarea(obj, label, name)" class="field"
+     th:with="br=${#ctx.getVariable('org.springframework.validation.BindingResult.' + obj)}, val=${#ctx.getVariable(obj)}"
+     th:classappend="${br != null and br.hasFieldErrors(name)} ? 'has-error'">
+    <label th:for="${name}" th:text="${label}">Label</label>
+    <textarea class="textarea" th:id="${name}" th:name="${name}" th:text="${val != null ? val.__${name}__ : null}"></textarea>
+    <p class="field-error" th:if="${br != null and br.hasFieldErrors(name)}"
+       th:text="${br.getFieldError(name).defaultMessage}"></p>
+</div>
+
+<!-- Error line for hand-written fields (selects, etc.) -->
+<th:block th:fragment="error(obj, name)"
+          th:with="br=${#ctx.getVariable('org.springframework.validation.BindingResult.' + obj)}">
+    <p class="field-error" th:if="${br != null and br.hasFieldErrors(name)}"
+       th:text="${br.getFieldError(name).defaultMessage}"></p>
+</th:block>
+
+<!-- Boolean helper for class="has-error" -->
+<th:block th:fragment="hasError(obj, name)"
+          th:with="br=${#ctx.getVariable('org.springframework.validation.BindingResult.' + obj)}"
+          th:text="${br != null and br.hasFieldErrors(name)} ? 'has-error' : ''"></th:block>
+</body>
+</html>

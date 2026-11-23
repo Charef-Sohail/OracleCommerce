@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Mouvement', 'mouvements', ~{::main}, ~{})}">
+<body>
+<main class="content">
+    <div class="page-head">
+        <div><h1>Mouvement <span class="mono" th:text="'#' + ${mouvement.id}">#1</span></h1>
+            <p th:text="${mouvement.dateMouvement != null} ? ${#temporals.format(mouvement.dateMouvement, 'dd/MM/yyyy à HH:mm')} : ''">date</p></div>
+        <div class="actions"><a th:href="@{/mouvements-stock}" class="btn">Retour à la liste</a></div>
+    </div>
+    <div class="grid-2">
+        <section class="card card-pad">
+            <dl class="kv">
+                <dt>Produit</dt><dd><a th:href="@{/mouvements-stock/produit/{id}(id=${mouvement.produitId})}" th:text="${mouvement.nomProduit}" style="text-decoration:underline">Produit</a></dd>
+                <dt>Référence</dt><dd class="mono" th:text="${mouvement.referenceProduit}">REF</dd>
+                <dt>Type</dt><dd><span class="badge" th:classappend="'badge-' + ${#strings.toLowerCase(mouvement.typeMouvement)}" th:text="${mouvement.typeMouvement}">ENTREE</span></dd>
+                <dt>Quantité</dt><dd class="mono" th:text="${mouvement.quantite}">0</dd>
+                <dt>Motif</dt><dd th:text="${mouvement.motif != null and !#strings.isEmpty(mouvement.motif)} ? ${mouvement.motif} : '—'">motif</dd>
+            </dl>
+        </section>
+        <section class="card card-pad">
+            <div class="stat" style="padding:0">
+                <div class="label">Stock avant → après</div>
+                <div class="value mono"><span class="muted" th:text="${mouvement.quantiteAvant}">0</span> →
+                    <span th:text="${mouvement.quantiteApres}">0</span></div>
+            </div>
+        </section>
+    </div>
+</main>
+</body>
+</html>
